@@ -1,0 +1,198 @@
+:root{
+  --bg:#000;
+  --fg:#dcdcdc;
+  --accent:#00d7ff;
+  --muted:#7a7a7a;
+}
+
+/* Base / layout */
+*{box-sizing:border-box}
+html,body,#root{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;}
+.page{padding:14px 20px 40px;min-height:100%; background:var(--bg); color:var(--fg)}
+
+/* Topbar */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  padding:8px 14px;
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:18px;
+}
+.topbar .center{color:var(--accent); text-align:center; flex:1}
+.topbar .left{width:120px}
+.topbar .right{width:280px; text-align:right}
+
+/* Terminal container */
+.terminal{
+  background:transparent;
+  padding:18px 28px;
+  max-width:1200px;
+  color:var(--fg);
+  line-height:1.25;
+  font-size:15px;
+}
+
+/* ASCII art - smaller line-height, terminal-like */
+.ascii{
+  color:var(--fg);
+  font-size:28px;
+  line-height:0.95;
+  margin:6px 0 12px;
+  white-space:pre;
+  letter-spacing:0;
+  font-weight:400;
+}
+
+/* info line */
+.info{
+  color:var(--muted);
+  margin-bottom:12px;
+}
+
+/* help title & hint */
+.help-title{
+  color:var(--accent);
+  margin-top:10px;
+  margin-bottom:8px;
+  font-weight:600;
+}
+.help-tip{
+  color:var(--muted);
+  margin-top:10px;
+  font-style:italic;
+}
+
+/* help grid - terminal style columns */
+.help-grid-wrap{
+  margin-top:6px;
+  margin-bottom:6px;
+}
+.help-grid-columns{
+  display:grid;
+  grid-template-columns: repeat(7, minmax(8ch, 1fr)); /* 7 columns like screenshot; adjusts responsively */
+  gap: 6px 28px;
+  align-items:start;
+  font-size:13px;
+  color:var(--fg);
+  margin:6px 0;
+}
+.help-item{
+  white-space:nowrap;
+  padding:2px 0;
+  color:var(--fg);
+}
+
+/* lines and prompt */
+.line{margin:6px 0}
+.prompt{color:var(--accent); margin-right:10px; font-weight:600}
+.cmd{color:var(--fg)}
+
+/* Output pre formatting (instant output) */
+.output-pre{
+  white-space:pre-wrap;
+  margin:0;
+  color:var(--fg);
+}
+
+/* Input row */
+.input-row{display:flex;align-items:flex-start;margin-top:12px}
+.input-wrap{position:relative; width:70%}
+.terminal-input{
+  background:transparent;
+  border:0;
+  outline:none;
+  color:var(--fg);
+  width:100%;
+  font-family:inherit;
+  font-size:15px;
+  caret-color:var(--accent);
+  padding:4px 2px;
+  letter-spacing:0;
+}
+
+/* Suggestion panel (fade-up) */
+.suggest-panel{
+  position:absolute;
+  left:0;
+  right:auto;
+  bottom:auto;
+  top:36px;
+  background:rgba(10,10,10,0.98);
+  border:1px solid rgba(255,255,255,0.04);
+  padding:8px;
+  width:640px;
+  max-height:320px;
+  overflow:auto;
+  box-shadow:0 8px 30px rgba(0,0,0,0.6);
+  z-index:40;
+  transform-origin: bottom left;
+  animation: fadeUp 220ms ease both;
+  border-radius:6px;
+}
+
+/* count line */
+.suggest-count{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:6px;
+  padding-left:6px;
+}
+
+/* grid of suggestions (many columns) */
+.suggest-grid{
+  display:grid;
+  grid-template-columns: repeat(6, minmax(8ch, 1fr));
+  gap:6px 8px;
+}
+.suggest-pill{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:6px;
+  padding:6px 8px;
+  text-align:left;
+  background:transparent;
+  border:0;
+  color:var(--fg);
+  cursor:pointer;
+  border-radius:4px;
+  font-family:inherit;
+  font-size:13px;
+}
+.suggest-pill:hover, .suggest-pill.selected{
+  background:rgba(255,255,255,0.02);
+}
+.pill-text{flex:1; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.pill-tag{color:var(--muted); font-size:11px; margin-left:8px}
+
+/* typing placeholder */
+.typing{color:var(--muted)}
+
+/* animations */
+@keyframes fadeUp {
+  from {
+    transform: translateY(8px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* responsive */
+@media (max-width:1100px){
+  .help-grid-columns{ grid-template-columns: repeat(5, minmax(8ch, 1fr)); }
+  .suggest-grid{ grid-template-columns: repeat(4, minmax(6ch, 1fr)); }
+  .suggest-panel{ width:520px; top:48px; left:-10px; }
+}
+@media (max-width:800px){
+  .ascii{font-size:22px}
+  .topbar .right{display:none}
+  .help-grid-columns{ grid-template-columns: repeat(2, minmax(8ch, 1fr)); }
+  .suggest-grid{ grid-template-columns: repeat(2, minmax(6ch, 1fr)); }
+  .suggest-panel{ width:100vw; left:-20px; top:52px; border-radius:0; }
+}
