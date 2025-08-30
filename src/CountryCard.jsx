@@ -22,14 +22,25 @@ export default function CountryCard({ country }) {
   const regionText = subregion ? `${region} — ${subregion}` : region;
 
   return (
-    <div style={{ display: "flex", gap: 18, alignItems: "flex-start", maxWidth: 800 }}>
+    <div style={{
+      display: "flex",
+      gap: "clamp(12px, 3vw, 18px)",
+      alignItems: "flex-start",
+      maxWidth: 800,
+      flexDirection: "row",
+      "@media (max-width: 480px)": {
+        flexDirection: "column",
+        gap: 12
+      }
+    }}>
       <div style={{
-        minWidth: 220,
+        width: "clamp(120px, 30vw, 220px)",
+        minWidth: "120px",
         borderRadius: 8,
         overflow: "hidden",
         boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
         background: "#fff",
-        padding: 8,
+        padding: "clamp(4px, 1vw, 8px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
@@ -38,23 +49,34 @@ export default function CountryCard({ country }) {
           <img src={flagSvg} alt={`${name} flag`} style={{ width: "100%", height: "auto", display: "block" }} />
         ) : (
           <div style={{
-            fontSize: 64,
-            padding: 18
+            fontSize: "clamp(32px, 8vw, 64px)",
+            padding: "clamp(8px, 2vw, 18px)"
           }}>{flagEmoji || cca2}</div>
         )}
       </div>
 
-      <div style={{ flex: 1, color: "var(--fg)" }}>
-        <h3 style={{ margin: "0 0 6px 0" }}>
+      <div style={{ flex: 1, color: "var(--fg)", minWidth: 0 }}>
+        <h3 style={{
+          margin: "0 0 6px 0",
+          fontSize: "clamp(1.1rem, 3vw, 1.5rem)",
+          wordBreak: "break-word"
+        }}>
           {name} {official ? <small style={{ color: "var(--muted)", fontWeight: 400 }}>({official})</small> : null}
         </h3>
-        <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 12px", alignItems: "start", marginTop: 8 }}>
-          <div style={{ color: "var(--muted)" }}>Code</div><div>{cca2}</div>
-          <div style={{ color: "var(--muted)" }}>Region</div><div>{regionText || "—"}</div>
-          <div style={{ color: "var(--muted)" }}>Capital</div><div>{capital}</div>
-          <div style={{ color: "var(--muted)" }}>Population</div><div>{population}</div>
-          <div style={{ color: "var(--muted)" }}>Currency</div><div>{currencies}</div>
-          <div style={{ color: "var(--muted)" }}>Languages</div><div>{languages}</div>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(60px, auto) 1fr",
+          gap: "clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px)",
+          alignItems: "start",
+          marginTop: 8,
+          fontSize: "clamp(0.85rem, 2vw, 1rem)"
+        }}>
+          <div style={{ color: "var(--muted)" }}>Code</div><div style={{ wordBreak: "break-word" }}>{cca2}</div>
+          <div style={{ color: "var(--muted)" }}>Region</div><div style={{ wordBreak: "break-word" }}>{regionText || "—"}</div>
+          <div style={{ color: "var(--muted)" }}>Capital</div><div style={{ wordBreak: "break-word" }}>{capital}</div>
+          <div style={{ color: "var(--muted)" }}>Population</div><div style={{ wordBreak: "break-word" }}>{population}</div>
+          <div style={{ color: "var(--muted)" }}>Currency</div><div style={{ wordBreak: "break-word" }}>{currencies}</div>
+          <div style={{ color: "var(--muted)" }}>Languages</div><div style={{ wordBreak: "break-word" }}>{languages}</div>
         </div>
       </div>
     </div>

@@ -92,7 +92,7 @@ function generateMatrix() {
     return lines.join('\n');
 }
 // e.g. put this outside, then in makeCommands call country: { fn: makeCountryCommand(pushComponent) }
-function makeCountryCommand(pushComponent, CountryCard) {
+function makeCountryCommand(pushComponent) {
   return async function countryCommand(args = []) {
     async function fetchJson(url) {
       const res = await fetch(url);
