@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import CountryCard from "./CountryCard";
 import GithubCard from "./GithubCard";
 import { THEMES, THEME_NAMES } from "./themes";
 
@@ -90,6 +91,37 @@ function generateMatrix() {
     }
     return lines.join('\n');
 }
+// e.g. put this outside, then in makeCommands call country: { fn: makeCountryCommand(pushComponent) }
+function makeCountryCommand(pushComponent, CountryCard) {
+  return async function countryCommand(args = []) {
+    async function fetchJson(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }
+
+    if (!args || args.length === 0) {
+      const list = await fetchJson("https://restcountries.com/v3.1/all?fields=name,cca2,flag");
+      const sorted = list.sort((a,b)=> (a.name?.common||"").localeCompare(b.name?.common||""));
+      return sorted.map(c => `${c.flag || ""} ${c.name?.common || c.cca2 || "Unknown"}`).join("\n");
+    }
+
+    const q = args.join(" ").trim();
+    const results = await fetchJson(`https://restcountries.com/v3.1/name/${encodeURIComponent(q)}?fullText=false`);
+    if (!Array.isArray(results) || results.length === 0) return `No country found for "${q}"`;
+
+    const primary = results.find(r => (r.name?.common||"").toLowerCase() === q.toLowerCase()) || results[0];
+    try {
+      if (typeof pushComponent === "function") pushComponent(<CountryCard country={primary} />);
+    } catch (e) { console.log(e);
+    }
+
+    if (results.length > 1) {
+      return results.slice(0,25).map(r => `${r.flag || ""} ${r.name?.common || r.cca2}`).join("\n");
+    }
+    return `Country: ${primary.name?.common || "Unknown"} (${primary.cca2 || ""})`;
+  };
+}
 
 function generateCalendar(year = new Date().getFullYear()) {
     const months = [
@@ -161,8 +193,8 @@ function generateClockFace(time) {
     const hour = time.getHours() % 12;
     const minute = time.getMinutes();
 
-    const hourAngle = (hour * 30) + (minute * 0.5);
-    const minuteAngle = minute * 6;
+    const _hourAngle = (hour * 30) + (minute * 0.5);
+    const _minuteAngle = minute * 6;
 
     let clock = '        12\n';
     clock += '    ┌─────────┐\n';
@@ -242,7 +274,12 @@ const makeCommands = (applyThemeFn, pushComponent, getUptimeString, dev) => {
                 }
             },
         },
-
+// import CountryCard at top of Terminal.jsx
+// inside makeCommands(..., pushComponent, ...) add:
+country: {
+  description: "List countries or show country details: country [name]",
+  fn: makeCountryCommand(pushComponent, CountryCard)
+},
         // New commands
         age: {
             description: "Calculate age from birth date: age [YYYY-MM-DD | DD-MM-YYYY | DD/MM/YYYY]",
@@ -366,9 +403,10 @@ const makeCommands = (applyThemeFn, pushComponent, getUptimeString, dev) => {
                             isRunning = false;
                             return "⏱️  Stopwatch reset! 🔄\nTime: 00:00.00";
 
-                        case 'time':
+                        case 'time': {
                             const currentTime = isRunning ? elapsedTime + (Date.now() - startTime) : elapsedTime;
                             return `⏱️  Current Time: ${formatTime(currentTime)}`;
+                        }
 
                         default:
                             return "Unknown action. Use: start, stop, reset, or time";
