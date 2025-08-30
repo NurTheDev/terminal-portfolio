@@ -1,18 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { THEMES, THEME_NAMES } from "./themes";
+import { useEffect, useRef, useState } from "react";
 import GithubCard from "./GithubCard";
+import { THEMES, THEME_NAMES } from "./themes";
 
-/*
-  Terminal - Nur Islam (NurTheDev)
-  - Header shows DEVELOPER_INFO (dynamic)
-  - header-left width increased to show full ASCII name (700px on desktop)
-  - On mobile/tablet header stacks (column) and name remains visible
-  - Uptime = terminal active time (since page mounted) and updates every second
-  - PLATFORMS and LANGUAGES displayed under the sys-box
-  - clear clears only the terminal output (header persists)
-*/
-
-// Your ASCII logo (keeps the same big block you provided)
 const ASCII_LOGO = ` ██████   █████                         █████         ████
 ▒▒██████ ▒▒███                         ▒▒███         ▒▒███
  ▒███▒███ ▒███  █████ ████ ████████     ▒███   █████  ▒███   ██████   █████████████
@@ -44,15 +33,147 @@ class DEVELOPER_INFO {
     }
 }
 
-/* Command names (unchanged) */
+/* Command names */
 const COMMAND_NAMES = [
     "nurislam","about","age","antonym","ascii","asciiqr","base64","calendar","capitalize","clear","coin",
     "commands","contact","countdays","country","curl","date","define","dice","dns","dnslookup","echo","emoji",
     "geo","github","hash","help","history","ip","json","lowercase","matrix","ping","projects",
     "qr","quote","remind","reset","reverse","rps","set","shorten","shutdown","social","stock",
-    "stopwatch","synonym","sysinfo","theme","time","timer","translate","ttt","uppercase","uptime",
+    "stopwatch","synonym","sysinfo","theme","time","timer","translate","ttt","typer","uppercase","uptime",
     "username","uuid","weather","whoami"
 ];
+
+// Utility functions
+function parseDate(dateStr) {
+    const formats = [
+        /^(\d{4})-(\d{2})-(\d{2})$/, // YYYY-MM-DD
+        /^(\d{2})-(\d{2})-(\d{4})$/, // DD-MM-YYYY
+        /^(\d{2})\/(\d{2})\/(\d{4})$/ // DD/MM/YYYY
+    ];
+
+    for (let i = 0; i < formats.length; i++) {
+        const match = dateStr.match(formats[i]);
+        if (match) {
+            let year, month, day;
+            if (i === 0) { // YYYY-MM-DD
+                [, year, month, day] = match;
+            } else { // DD-MM-YYYY or DD/MM/YYYY
+                [, day, month, year] = match;
+            }
+            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        }
+    }
+    return null;
+}
+
+function calculateAge(birthDate) {
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+
+    return age;
+}
+
+function generateMatrix() {
+    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+    const lines = [];
+    for (let i = 0; i < 20; i++) {
+        let line = '';
+        for (let j = 0; j < 80; j++) {
+            line += chars[Math.floor(Math.random() * chars.length)];
+        }
+        lines.push(line);
+    }
+    return lines.join('\n');
+}
+
+function generateCalendar(year = new Date().getFullYear()) {
+    const months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    let calendar = `\n📅 Calendar ${year}\n`;
+    calendar += '='.repeat(50) + '\n\n';
+
+    for (let month = 0; month < 12; month++) {
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDay = firstDay.getDay();
+
+        calendar += `${months[month]} ${year}\n`;
+        calendar += 'Su Mo Tu We Th Fr Sa\n';
+
+        let week = '';
+        for (let i = 0; i < startingDay; i++) {
+            week += '   ';
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            week += day.toString().padStart(2, ' ') + ' ';
+            if ((startingDay + day - 1) % 7 === 6) {
+                calendar += week + '\n';
+                week = '';
+            }
+        }
+
+        if (week) calendar += week + '\n';
+        calendar += '\n';
+    }
+
+    return calendar;
+}
+
+function getRandomQuote() {
+    const quotes = [
+        "The only way to do great work is to love what you do. - Steve Jobs",
+        "Life is what happens to you while you're busy making other plans. - John Lennon",
+        "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
+        "In the middle of difficulty lies opportunity. - Albert Einstein",
+        "Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill",
+        "The only impossible journey is the one you never begin. - Tony Robbins",
+        "Your time is limited, don't waste it living someone else's life. - Steve Jobs",
+        "Innovation distinguishes between a leader and a follower. - Steve Jobs",
+        "Code is like humor. When you have to explain it, it's bad. - Cory House",
+        "First, solve the problem. Then, write the code. - John Johnson",
+        "Any fool can write code that a computer can understand. Good programmers write code that humans can understand. - Martin Fowler",
+        "Programs must be written for people to read, and only incidentally for machines to execute. - Harold Abelson"
+    ];
+
+    return quotes[Math.floor(Math.random() * quotes.length)];
+}
+
+function formatTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const milliseconds = Math.floor((ms % 1000) / 10);
+
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+}
+
+function generateClockFace(time) {
+    const hour = time.getHours() % 12;
+    const minute = time.getMinutes();
+
+    const hourAngle = (hour * 30) + (minute * 0.5);
+    const minuteAngle = minute * 6;
+
+    let clock = '        12\n';
+    clock += '    ┌─────────┐\n';
+    clock += ' 9  │    ·    │  3\n';
+    clock += '    │    ·    │\n';
+    clock += '    │    ·    │\n';
+    clock += '    └─────────┘\n';
+    clock += '        6\n';
+
+    return clock;
+}
 
 const makeCommands = (applyThemeFn, pushComponent, getUptimeString, dev) => {
     const base = {
@@ -60,7 +181,7 @@ const makeCommands = (applyThemeFn, pushComponent, getUptimeString, dev) => {
         "?": { description: "Alias for help", fn: () => "" },
         about: {
             description: "Short about text",
-            fn: () => `👋 Hey there! I’m ${dev.name}\n${dev.title}\n\n${dev.expertise}\n\nEmail: ${dev.email}\nLinkedIn: ${dev.linkedIn}\nGitHub: ${dev.github}`
+            fn: () => `👋 Hey there! I'm ${dev.name}\n${dev.title}\n\n${dev.expertise}\n\nEmail: ${dev.email}\nLinkedIn: ${dev.linkedIn}\nGitHub: ${dev.github}`
         },
         contact: {
             description: "Contact info",
@@ -121,6 +242,180 @@ const makeCommands = (applyThemeFn, pushComponent, getUptimeString, dev) => {
                 }
             },
         },
+
+        // New commands
+        age: {
+            description: "Calculate age from birth date: age [YYYY-MM-DD | DD-MM-YYYY | DD/MM/YYYY]",
+            fn: (args) => {
+                if (args.length === 0) {
+                    return "Usage: age [YYYY-MM-DD | DD-MM-YYYY | DD/MM/YYYY]\nExample: age 1995-06-15";
+                }
+
+                const dateStr = args[0];
+                const birthDate = parseDate(dateStr);
+
+                if (!birthDate) {
+                    return "Invalid date format. Please use:\n• YYYY-MM-DD (e.g., 1995-06-15)\n• DD-MM-YYYY (e.g., 15-06-1995)\n• DD/MM/YYYY (e.g., 15/06/1995)";
+                }
+
+                if (birthDate > new Date()) {
+                    return "Birth date cannot be in the future!";
+                }
+
+                const age = calculateAge(birthDate);
+                const today = new Date();
+                const nextBirthday = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+                if (nextBirthday < today) {
+                    nextBirthday.setFullYear(today.getFullYear() + 1);
+                }
+                const daysUntilBirthday = Math.ceil((nextBirthday - today) / (1000 * 60 * 60 * 24));
+
+                return `🎂 Age: ${age} years old\n📅 Next birthday in ${daysUntilBirthday} days`;
+            }
+        },
+
+        matrix: {
+            description: "Display Matrix-style falling characters",
+            fn: () => {
+                const matrixText = generateMatrix();
+                return `🟢 THE MATRIX 🟢\n${matrixText}\n\n"Welcome to the real world." - Morpheus`;
+            }
+        },
+
+        calendar: {
+            description: "Show current year calendar or specific year: calendar [YYYY]",
+            fn: (args) => {
+                const year = args[0] ? parseInt(args[0]) : new Date().getFullYear();
+                if (isNaN(year) || year < 1 || year > 9999) {
+                    return "Invalid year. Please provide a valid year (1-9999).";
+                }
+                return generateCalendar(year);
+            }
+        },
+
+        coin: {
+            description: "Flip a gold coin - choose heads or tails",
+            fn: (args) => {
+                if (args.length === 0) {
+                    return "🪙 Coin Flip Game\nUsage: coin [heads|tails]\nExample: coin heads";
+                }
+
+                const choice = args[0].toLowerCase();
+                if (choice !== 'heads' && choice !== 'tails') {
+                    return "Please choose 'heads' or 'tails'\nUsage: coin [heads|tails]";
+                }
+
+                const result = Math.random() < 0.5 ? 'heads' : 'tails';
+                const win = choice === result;
+
+                let coin = '';
+                coin += '    ╭─────────╮\n';
+                coin += '  ╱           ╲\n';
+                coin += ' ╱      🏛️      ╲\n';
+                coin += '│   GOLD COIN   │\n';
+                coin += '│      💰       │\n';
+                coin += ' ╲             ╱\n';
+                coin += '  ╲___________╱\n';
+
+                return `🪙 Coin Flip Result:\n${coin}\nResult: ${result.toUpperCase()}\nYou chose: ${choice.toUpperCase()}\n${win ? '🎉 You WIN!' : '😔 You LOSE!'}`;
+            }
+        },
+
+        quote: {
+            description: "Display a random inspirational quote",
+            fn: () => {
+                const quote = getRandomQuote();
+                return `💭 Random Quote:\n\n"${quote}"\n\n✨ Keep inspiring yourself! ✨`;
+            }
+        },
+
+        stopwatch: {
+            description: "Start/stop/reset a stopwatch",
+            fn: (() => {
+                let startTime = null;
+                let elapsedTime = 0;
+                let isRunning = false;
+
+                return (args) => {
+                    const action = args[0]?.toLowerCase();
+
+                    if (!action) {
+                        return "⏱️  Stopwatch Commands:\n• stopwatch start - Start the timer\n• stopwatch stop - Stop the timer\n• stopwatch reset - Reset to 00:00.00\n• stopwatch time - Show current time";
+                    }
+
+                    switch (action) {
+                        case 'start':
+                            if (isRunning) {
+                                return "⏱️  Stopwatch is already running!";
+                            }
+                            startTime = Date.now();
+                            isRunning = true;
+                            return "⏱️  Stopwatch started! ▶️";
+
+                        case 'stop':
+                            if (!isRunning) {
+                                return "⏱️  Stopwatch is not running!";
+                            }
+                            elapsedTime += Date.now() - startTime;
+                            isRunning = false;
+                            return `⏱️  Stopwatch stopped! ⏸️\nTime: ${formatTime(elapsedTime)}`;
+
+                        case 'reset':
+                            startTime = null;
+                            elapsedTime = 0;
+                            isRunning = false;
+                            return "⏱️  Stopwatch reset! 🔄\nTime: 00:00.00";
+
+                        case 'time':
+                            const currentTime = isRunning ? elapsedTime + (Date.now() - startTime) : elapsedTime;
+                            return `⏱️  Current Time: ${formatTime(currentTime)}`;
+
+                        default:
+                            return "Unknown action. Use: start, stop, reset, or time";
+                    }
+                };
+            })()
+        },
+
+        typer: {
+            description: "Typing test and typing-related tools",
+            fn: (args) => {
+                const action = args[0]?.toLowerCase();
+
+                if (!action) {
+                    return "⌨️  Typing Tools:\n• typer test - Start a typing speed test\n• typer practice - Practice typing\n• typer stats - Show typing statistics\n• typer tips - Get typing improvement tips";
+                }
+
+                switch (action) {
+                    case 'test':
+                        return "⌨️  Typing Test\n\nType this sentence as fast as you can:\n'The quick brown fox jumps over the lazy dog.'\n\nStart typing when ready! (This is a simulation - actual test would require interactive input)";
+
+                    case 'practice':
+                        return "⌨️  Typing Practice\n\nPractice sentences:\n1. Pack my box with five dozen liquor jugs\n2. How vexingly quick daft zebras jump\n3. Bright vixens jump; dozy fowl quack\n\n💡 Focus on accuracy first, then speed!";
+
+                    case 'stats':
+                        return "⌨️  Typing Statistics:\n\n📊 Average WPM: 65 (estimated)\n🎯 Accuracy: 94%\n⌨️  Most common errors: Transposition\n📈 Improvement: +5 WPM this month\n\n(These are sample statistics)";
+
+                    case 'tips':
+                        return "⌨️  Typing Tips:\n\n1. 👀 Look at the screen, not your fingers\n2. 🖐️  Use all 10 fingers correctly\n3. 🪑 Maintain good posture\n4. 🎯 Focus on accuracy over speed\n5. 🔄 Practice regularly\n6. 💪 Build muscle memory\n7. 📚 Use proper finger positioning (home row)";
+
+                    default:
+                        return "Unknown action. Use: test, practice, stats, or tips";
+                }
+            }
+        },
+
+        time: {
+            description: "Show current time with ASCII clock",
+            fn: () => {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                const dateString = now.toDateString();
+                const clock = generateClockFace(now);
+
+                return `🕐 Current Time & Date\n\n${clock}\n📅 ${dateString}\n⏰ ${timeString}\n🌍 Local Time Zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
+            }
+        }
     };
 
     for (const name of COMMAND_NAMES) {
